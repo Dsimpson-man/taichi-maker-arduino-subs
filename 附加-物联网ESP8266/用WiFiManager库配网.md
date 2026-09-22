@@ -122,3 +122,7 @@ static const char HTTP_PORTAL_OPTIONS[] PROGMEM =
 - 太极创客提供了 `WiFiManager` 库的汉化版，界面按钮显示为中文，英语不熟悉的朋友可直接使用。
 - 汉化原理：修改库文件夹中 `WiFiManager.h` 头文件开头的字符数组（本质是 HTML 代码），例如把 `HTTP_PORTAL_OPTIONS` 数组中的 `Configure WiFi` 改成「配置 WiFi」。
 - 想了解更高级的用法（如设置 AP 模式的持续时间），可在 Arduino IDE 的「文件」→「示例」中找到 `WiFiManager` 库自带的示例程序。
+
+---
+
+*本文稿由 AI 从视频字幕整理，如技术描述与原视频有出入，请以原视频为准。*

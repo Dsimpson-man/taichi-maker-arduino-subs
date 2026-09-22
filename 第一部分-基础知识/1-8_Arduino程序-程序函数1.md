@@ -37,3 +37,7 @@
 - 太极创客官网 `www.taichi-maker.com` 的「参考资料 → Arduino 编程 → 函数」栏目提供了全部 Arduino 参考资料的中文翻译。
 - `delayMicroseconds()` 与 `delay()` 都用于暂停程序运行，区别在于前者参数单位是微秒，后者是毫秒。
 - `delayMicroseconds()` 的返回值是 void，即该函数没有返回值。
+
+---
+
+*本文稿由 AI 从视频字幕整理，如技术描述与原视频有出入，请以原视频为准。*

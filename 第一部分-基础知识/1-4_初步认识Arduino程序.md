@@ -32,3 +32,7 @@ Arduino 编程语言是基于 C++ 这种计算机编程语言的。C++ 是很多
 - **函数**：识别两个特征——函数名后必有一对圆括号 `()`，函数体由一对大括号 `{}` 包围。
 - Arduino 程序中的两个函数：`setup()` 中的代码只运行一次，`loop()` 中的代码会反复执行。
 - 两个函数的初始内容都是注释，分别提示 `// put your setup code here, to run once:` 和 `// put your main code here, to run repeatedly:`。
+
+---
+
+*本文稿由 AI 从视频字幕整理，如技术描述与原视频有出入，请以原视频为准。*
