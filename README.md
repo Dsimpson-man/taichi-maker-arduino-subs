@@ -149,6 +149,16 @@
 
 AI 字幕本身也存在同音字误识别（如把 Arduino 识别成"耳边""阿迪诺"），整理时已尽力校正。**如发现技术描述与视频原文有出入，请以原视频为准。**
 
+### 工具链
+
+整理所用工具已随仓库提供，见 [`scripts/`](scripts/README.md)。支持 B站、YouTube 等站点：
+
+```bash
+./scripts/yt-sub.sh "https://www.bilibili.com/video/BV1L7411c7jw?p=3"
+```
+
+流程为「优先抓平台字幕 → 抓不到或内容异常则下载音频本地识别」。本地识别使用 **SenseVoice** 模型（228 MB，全程离线，音视频不上传），相比早期 `faster-whisper-small` 方案中文识别更准、模型更小。输出 Markdown 文稿 + SRT 字幕。
+
 ---
 
 ## 交付统计

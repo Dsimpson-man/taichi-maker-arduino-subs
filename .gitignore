@@ -1,0 +1,25 @@
+# 中间产物与临时音频
+.work-*/
+*.wav
+*.part
+*.mp4
+*.m4a
+*.webm
+audio.*
+
+# OS / 编辑器
+.DS_Store
+Thumbs.db
+*.swp
+*~
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# 压缩包
+*.zip
+*.7z
+*.tar.gz

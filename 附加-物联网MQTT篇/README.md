@@ -187,11 +187,13 @@ B站的 AI 字幕接口存在一个已知缺陷：**对同一个分P重复请求
 
 既然接口拿不到「这一集」的字幕，那就**不经接口**——直接下载这一集的音频，在本地做语音识别。**音频取自哪个视频，转写结果就必然对应哪个视频，从根本上不存在串台问题。**
 
-流程（`scripts/whisper_mqtt.py`）：
+流程（早期为 `scripts/whisper_mqtt.py`，现已通用化为 [`scripts/`](../scripts/README.md)）：
 
 ```
 yt-dlp 下载音频  →  imageio-ffmpeg 转 16kHz 单声道 wav  →  faster-whisper-small 转写
 ```
+
+> 💡 **工具已升级**：当前仓库的 [`scripts/yt-sub.sh`](../scripts/README.md) 把上述流程通用化，识别引擎由 `faster-whisper-small` 换成 **SenseVoice**（模型 228 MB、中文更准、全程离线），并支持 YouTube 等站点。本册这 10 集是早期版本工具转写的，结果不受影响。
 
 | 环节 | 说明 |
 |---|---|
