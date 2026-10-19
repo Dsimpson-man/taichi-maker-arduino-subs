@@ -2,7 +2,7 @@
 
 这是本项目整理字幕时实际使用的通用工具链。核心思路：**平台有字幕就直接抓，接口返回异常内容或没有字幕时，就下载音频在本地做语音识别**——音频取自哪一集，转写结果就必然对应哪一集，从根本上绕开 B站 AI 字幕接口的串台问题。
 
-支持 B站、YouTube 以及 yt-dlp 支持的其他 1000+ 站点。
+支持 **B站、YouTube、小红书** 以及 yt-dlp 支持的其他 1000+ 站点。
 
 ## 一键使用
 
@@ -11,8 +11,14 @@
 python3 -m yt_dlp --version >/dev/null || pip3 install --user yt-dlp
 pip3 install --user sherpa-onnx          # 仅首次
 
-# 抓一集（优先平台字幕，没有则本地识别）
-./scripts/yt-sub.sh "https://www.bilibili.com/video/BV1L7411c7jw?p=3"
+# B站（国内一般直连，关掉代理更快）
+YT_PROXY="" ./scripts/yt-sub.sh "https://www.bilibili.com/video/BV1L7411c7jw?p=3"
+
+# YouTube（默认走本机代理）
+./scripts/yt-sub.sh "https://www.youtube.com/watch?v=XXXXXXXXXXX"
+
+# 小红书（链接要带 xsec_token，见下方说明）
+./scripts/yt-sub.sh "https://www.xiaohongshu.com/explore/<笔记ID>?xsec_token=..."
 
 # 指定输出目录
 ./scripts/yt-sub.sh "<URL>" ./附加-物联网ESP8266/
@@ -36,12 +42,48 @@ pip3 install --user sherpa-onnx          # 仅首次
    │       └─有──> VTT/SRT 转文本 ──> 文稿          （几秒完成）
    │
    └─[2] 无字幕，或接口返回错误内容
-           ├─ yt-dlp 下载音轨
-           ├─ afconvert 转 16kHz 单声道 WAV
+           ├─ yt-dlp 下载【音轨】（默认只下音频，不下视频）
+           ├─ ffmpeg 转 16kHz 单声道 WAV
            └─ SenseVoice ONNX 本地识别 ──> 文稿 + SRT
+           └─ 中间文件（原始媒体、wav）自动删除
 ```
 
 **第 2 步全程离线**，音视频不会上传到任何服务器。30 分钟音频在 M 系列芯片上约 2 分钟转写完成。
+
+### 只下音频，尽量少占带宽
+
+默认优先下载**纯音频流**（`bestaudio`）。实测差异很大：
+
+| 平台 | 纯音频流 | 体积 | 说明 |
+|---|---|---|---|
+| B站 | 有 | 约 1–3 MB / 10 分钟 | 直接拿音频轨 |
+| YouTube | 视客户端而定 | 约 2–5 MB / 10 分钟 | `android_vr` 等客户端可暴露纯音频流 |
+| **小红书** | **无** | 约 13 MB / 分钟 | 只有 720×1600 合并流，只能整段下载后抽音轨 |
+
+脚本会先探测有没有独立音轨：有就只下音频，没有才退到最小的含音频流，转完 WAV 后**立即删除原始媒体**（设 `KEEP_WORK=1` 可保留）。
+
+## 小红书注意事项
+
+小红书的链接**必须带 `xsec_token` 参数**，否则会被登录墙挡掉（页面返回"你访问的页面不见了"，yt-dlp 报 `No video formats found`）。
+
+✅ 能用：从网页端或 App「分享 → 复制链接」得到的完整链接
+
+```
+https://www.xiaohongshu.com/explore/6ad5c230000000002f032d12?xsec_token=AB0pb6A_...&xsec_source=pc_followed
+                                                               ^^^^^^^^^^^^ 关键参数
+```
+
+❌ 不能用：
+
+- 去掉 `xsec_token` 的裸链接；
+- **图文笔记**——没有视频就没有音频，无法转写；
+- 过期失效的 `xsec_token`，重新复制一次即可。
+
+`xhslink.com` 短链脚本会自动展开。
+
+**成本提醒**：小红书没有独立音频流，一个 7 分钟视频要下约 89 MB。批量处理时注意流量。
+
+---
 
 ## 为什么用 SenseVoice 替代 faster-whisper
 
@@ -88,7 +130,8 @@ YT_PROXY="" ./scripts/yt-sub.sh "https://www.bilibili.com/video/BVxxxx"
 | `yt-sub.sh` | 主入口，串起整个流程 |
 | `asr.py` | SenseVoice 识别：音频 → txt + srt，按 30 秒分块 |
 | `vtt2txt.py` | 平台字幕（VTT/SRT）→ txt + md |
-| `mkdoc.py` | 把 txt 整理成带来源表的 Markdown 文稿 |
+| `mkdoc.py` | 把 txt 整理成带来源表的 Markdown 文稿（按链接自动识别平台） |
+| `meta.py` | 取视频元信息，输出 JSON 供 shell 解析（规避中文/emoji 标题的字节截断） |
 
 ## 识别质量
 
@@ -105,6 +148,7 @@ SenseVoice 对中文口播内容识别质量良好，技术术语准确率高于
 | 视频 | 平台 | 时长 | 平台字幕 | 识别耗时 | 结果 |
 |---|---|---|---|---|---|
 | 巫师《原始积累的5条建议》 | YouTube | 29:24 | 无（连自动字幕都没有） | 约 2 分钟 | 9,030 字，术语准确 |
+| 《这个分享重新发了🤫》 | 小红书 | 6:49 | 无 | 约 30 秒 | 2,927 字，口播完整 |
 
 ---
 

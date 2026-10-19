@@ -4,6 +4,17 @@ import sys, re
 
 txt_path, md_path, title, url, uploader, duration, pubdate, sub_source = sys.argv[1:9]
 
+# 按链接推断来源平台
+host = re.sub(r"^https?://(www\.)?", "", url).split("/")[0]
+if "xiaohongshu" in host or "xhslink" in host:
+    platform = "小红书"
+elif "bilibili" in host or "b23.tv" in host:
+    platform = "B站"
+elif "youtube" in host or "youtu.be" in host:
+    platform = "YouTube"
+else:
+    platform = host
+
 raw = open(txt_path, encoding="utf-8").read()
 segs = re.findall(r"^\[(\d+:\d+)\] (.*)$", raw, re.M)
 
@@ -23,7 +34,7 @@ chars = len(re.sub(r"\s", "", "".join(body)))
 lines = [
     f"# {title}", "",
     "| 项 | 内容 |", "|---|---|",
-    f"| 来源 | YouTube · {uploader} |",
+    f"| 来源 | {platform} · {uploader} |",
     f"| 视频链接 | {url} |",
     f"| 时长 | {duration} |",
     f"| 发布 | {pubdate} |",
